@@ -11,6 +11,9 @@
 > schemas, configuration, and operational behavior may change without notice.
 > It has not been evaluated for production or safety-critical workloads.
 
+This repository is a public snapshot of an ongoing research codebase;
+development history predates the public tree.
+
 Long-running agents need more than a prompt and a tool loop. They need durable
 ownership, recoverable sessions, shared context, explicit evidence, and a place
 to coordinate when processes restart or work crosses agent boundaries.
