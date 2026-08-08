@@ -1,0 +1,73 @@
+{
+  "_description": "Frozen lifecycle event samples — mandatory structured log fields",
+  "_version": "1.0.0",
+  "_owner": "Rhizome Project",
+  "mandatory_fields": ["event", "ts", "level", "trace_id", "task_id", "node_id", "component"],
+  "events": [
+    {
+      "event": "runtime_starting",
+      "ts": "2026-03-13T00:00:00.000Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": "",
+      "watchdog_interval": 300,
+      "watchdog_max_age": 600,
+      "drain_timeout": 30
+    },
+    {
+      "event": "runtime_ready",
+      "ts": "2026-03-13T00:00:01.000Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": ""
+    },
+    {
+      "event": "watchdog_tick",
+      "ts": "2026-03-13T00:05:01.000Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": "",
+      "tick": 1
+    },
+    {
+      "event": "watchdog_cleanup",
+      "ts": "2026-03-13T00:05:01.500Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": "",
+      "tick": 1,
+      "found": 2,
+      "killed": 1,
+      "removed": 1,
+      "errors": 0
+    },
+    {
+      "event": "runtime_draining",
+      "ts": "2026-03-13T01:00:00.000Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": ""
+    },
+    {
+      "event": "runtime_stopped",
+      "ts": "2026-03-13T01:00:05.000Z",
+      "level": "INFO",
+      "component": "rhizome.service",
+      "trace_id": "",
+      "task_id": "",
+      "node_id": "",
+      "exit_code": 2,
+      "watchdog_ticks": 12
+    }
+  ]
+}

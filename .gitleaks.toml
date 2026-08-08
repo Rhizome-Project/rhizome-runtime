@@ -1,0 +1,28 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Synthetic executor credential used to verify output redaction"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^internal/executor/test_executor\.py$''']
+regexes = ['''sk-test-secret-key-1234567890abcdef''']
+
+[[allowlists]]
+description = "Synthetic credentials used by the redactor unit suite"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^internal/security/test_redactor\.py$''']
+regexes = [
+  '''sk-abc123456789012345''',
+  '''sk-proj-abcdef123456789''',
+  '''sk-in-list-12345678abcd''',
+  '''ghp_1234567890abcdef1234567890abcdef12345678''',
+]
+
+[[allowlists]]
+description = "Deterministic test-only vault key"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^internal/secret/vault_test\.go$''']
+regexes = ['''0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef''']

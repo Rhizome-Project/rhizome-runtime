@@ -1,0 +1,16 @@
+{
+  "_description": "Frozen ERROR_TAXONOMY - exact copy from runtime_contracts.py for contract verification",
+  "_version": "1.0.0",
+  "_owner": "Rhizome Project",
+  "codes": {
+    "executor_timeout": {"rpc_code": -32017, "retryable": true},
+    "executor_runtime_error": {"rpc_code": -32018, "retryable": true},
+    "state_transition_invalid": {"rpc_code": -32019, "retryable": false},
+    "policy_denied": {"rpc_code": -32010, "retryable": false},
+    "budget_exceeded": {"rpc_code": -32011, "retryable": false},
+    "quota_exceeded": {"rpc_code": -32012, "retryable": true},
+    "approval_timeout": {"rpc_code": -32014, "retryable": false},
+    "approval_rejected": {"rpc_code": -32015, "retryable": false},
+    "feature_disabled": {"rpc_code": -32020, "retryable": false}
+  }
+}

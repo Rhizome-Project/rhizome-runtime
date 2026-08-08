@@ -1,0 +1,52 @@
+{
+  "_description": "Stable fixtures for executor contract verification",
+  "_version": "1.0.0",
+  "base_path": "internal/executor/fixtures",
+  "fixtures": [
+    {
+      "file": "success_response.json",
+      "type": "jsonrpc_response",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1"
+    },
+    {
+      "file": "runtime_error_response.json",
+      "type": "jsonrpc_error",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1"
+    },
+    {
+      "file": "timeout_response.json",
+      "type": "jsonrpc_error",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1"
+    },
+    {
+      "file": "captcha_blocked_response.json",
+      "type": "jsonrpc_error",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1"
+    },
+    {
+      "file": "metrics_snapshot.json",
+      "type": "metrics_snapshot",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1",
+      "required_keys": ["timestamp", "profiles", "recovery", "orphan_containers_cleaned"]
+    },
+    {
+      "file": "lifecycle_events.json",
+      "type": "lifecycle_events",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1",
+      "mandatory_fields": ["event", "ts", "level", "trace_id", "task_id", "node_id", "component"]
+    },
+    {
+      "file": "error_taxonomy.json",
+      "type": "error_taxonomy",
+      "owner": "Rhizome Project",
+      "frozen_since": "fixture-v1",
+      "expected_count": 9
+    }
+  ]
+}

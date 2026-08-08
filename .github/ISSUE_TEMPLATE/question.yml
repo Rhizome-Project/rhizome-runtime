@@ -1,0 +1,36 @@
+name: Usage question
+description: Ask a focused question about evaluating or developing Rhizome Runtime
+title: "[Question]: "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, private source, databases, or unredacted logs.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to understand or accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What you tried
+      description: Include the relevant documentation, sanitized commands, and observed behavior.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Commit, operating system, architecture, Go version, and relevant Python version.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials and private data from this question.
+          required: true
+        - label: This is not a vulnerability report; security issues belong in the private channel.
+          required: true

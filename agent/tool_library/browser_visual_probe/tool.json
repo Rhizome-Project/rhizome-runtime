@@ -1,0 +1,116 @@
+{
+  "schema_version": "tool_bundle.v2",
+  "name": "browser_visual_probe",
+  "version": "2.0.0",
+  "description": "Capture bounded browser screenshots for local, file, localhost, or external product surfaces using a fresh browser profile. It can also start a dev server, wait for the target URL, capture screenshots/DOM, flag primary-surface geometry risks for board/grid/game UIs, and stop its owned server process. Use this directly for your own claimed visual/UX evidence lane when a runnable surface exists; status=warn means screenshots were captured but semantic visual review/repair is required. Arguments arrive as JSON on stdin; artifacts are written under RHIZOME_TOOL_ARTIFACT_DIR.",
+  "capability_suites": ["browser_read_only", "screenshot_capture", "console_read"],
+  "artifact_contracts": [
+    {
+      "name": "screenshots",
+      "type": "image/png",
+      "path": "screenshots/*.png",
+      "description": "Viewport screenshots captured during the probe.",
+      "required": false
+    },
+    {
+      "name": "probe_report",
+      "type": "application/json",
+      "path": "probe-report.json",
+      "description": "Structured probe result and visual risk summary.",
+      "required": true
+    }
+  ],
+  "healthcheck": {
+    "command": ["node", "browser_visual_probe.js", "--healthcheck"],
+    "timeout_seconds": 12
+  },
+  "dependencies": [
+    {
+      "name": "node",
+      "kind": "executable",
+      "required": true
+    },
+    {
+      "name": "chrome_or_edge",
+      "kind": "browser",
+      "required": true
+    }
+  ],
+  "concurrency": {
+    "max_parallel": 1
+  },
+  "provenance": {
+    "source": "agent/tool_library/browser_visual_probe"
+  },
+  "command": ["node", "browser_visual_probe.js"],
+  "timeout_seconds": 180,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "Preferred target. Any http(s) or file URL to inspect, such as http://127.0.0.1:5173 or https://example.com."
+      },
+      "html_path": {
+        "type": "string",
+        "description": "Optional fallback path to an existing HTML file. Relative paths resolve under RHIZOME_TOOL_WORKDIR; absolute local paths are allowed."
+      },
+      "start_command": {
+        "description": "Optional dev-server command to start before probing. Use a string for shell execution, or an argv array. The tool waits for url/port, captures evidence, then stops the owned process tree unless keep_server is true."
+      },
+      "cwd": {
+        "type": "string",
+        "description": "Optional working directory for start_command. Relative paths resolve under RHIZOME_TOOL_WORKDIR; absolute host paths are allowed."
+      },
+      "port": {
+        "type": "integer",
+        "description": "Optional dev-server port. Used to derive http://127.0.0.1:<port>/ when url is omitted and exposed as PORT/RHIZOME_SMOKE_PORT_HINT to start_command."
+      },
+      "path": {
+        "type": "string",
+        "description": "Optional path to append when deriving a URL from port. Defaults to /."
+      },
+      "wait_timeout_seconds": {
+        "type": "integer",
+        "description": "How long to wait for a started dev server to respond. Defaults to 30 seconds, capped at 90 seconds."
+      },
+      "keep_server": {
+        "type": "boolean",
+        "description": "Leave the owned dev server running after capture. Defaults to false."
+      },
+      "require_clean_git": {
+        "type": "boolean",
+        "description": "Require the target cwd git checkout to be clean before and after capture. This is enabled automatically for read-only validation checkouts under project-checkouts/review-* and foreign agent project checkouts."
+      },
+      "expected_head_sha": {
+        "type": "string",
+        "description": "Optional exact candidate HEAD guard. When present, the tool requires the cwd git HEAD to match and the checkout to stay clean before/after capture."
+      },
+      "viewports": {
+        "type": "array",
+        "description": "Optional bounded viewport list.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "width": { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        }
+      },
+      "markers": {
+        "type": "array",
+        "description": "Optional text markers to search for in dumped DOM.",
+        "items": { "type": "string" }
+      },
+      "timeout_seconds": {
+        "type": "integer",
+        "description": "Per-browser-process timeout, capped by the bundle."
+      },
+      "allow_external": {
+        "type": "boolean",
+        "description": "Deprecated. External targets are allowed in this trusted local runtime."
+      }
+    }
+  }
+}

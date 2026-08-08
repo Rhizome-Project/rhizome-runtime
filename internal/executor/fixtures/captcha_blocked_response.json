@@ -1,0 +1,18 @@
+{
+  "_description": "Sample JSON-RPC error response: browser task blocked by captcha (-32018)",
+  "_version": "1.0.0",
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32018,
+    "message": "executor_runtime_error",
+    "details": {
+      "status": "FAILED",
+      "exit_code": 1,
+      "duration_sec": 12.8,
+      "error_message": "Container exited with code 1",
+      "stderr": "playwright._impl._errors.Error: Page blocked by captcha at https://example.com/dashboard\nCaptcha type: reCAPTCHA v2\nScreenshot saved to /workspace/shared/captcha_blocked.png\n\nSuggested action: manual captcha solve or 2captcha service integration\n",
+      "trace_id": "tr-captcha-9012"
+    }
+  },
+  "id": "exec-004"
+}

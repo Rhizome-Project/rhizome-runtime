@@ -1,0 +1,101 @@
+{
+  "schema_version": "tool_bundle.v2",
+  "name": "browser_session",
+  "version": "2.0.0",
+  "description": "Trusted local browser session tool for agent-owned Chrome/Edge automation. Opens visible or headless browser sessions with a fresh profile, navigates URLs/files, clicks, types, evaluates JavaScript, captures screenshots, inspects DOM/text/layout, reports status, and closes only the owned session.",
+  "capability_suites": ["browser_unrestricted", "browser_interactive", "screenshot_capture", "console_read"],
+  "artifact_contracts": [
+    {
+      "name": "screenshots",
+      "type": "image/png",
+      "path": "screenshots/*.png",
+      "description": "Screenshots captured by screenshot actions.",
+      "required": false
+    },
+    {
+      "name": "session_state",
+      "type": "application/json",
+      "path": "session-state.json",
+      "description": "Owned browser session state for follow-up actions.",
+      "required": false
+    }
+  ],
+  "healthcheck": {
+    "command": ["node", "--version"],
+    "timeout_seconds": 5
+  },
+  "dependencies": [
+    {
+      "name": "node",
+      "kind": "executable",
+      "required": true
+    },
+    {
+      "name": "chrome_or_edge",
+      "kind": "browser",
+      "required": true
+    }
+  ],
+  "concurrency": {
+    "max_parallel": 1
+  },
+  "provenance": {
+    "source": "agent/tool_library/browser_session"
+  },
+  "command": ["node", "browser_session.js"],
+  "timeout_seconds": 180,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "description": "One of: open, goto, screenshot, inspect, click, type, evaluate, status, close, close_all."
+      },
+      "session_id": {
+        "type": "string",
+        "description": "Stable agent-local session id. Defaults to default."
+      },
+      "url": {
+        "type": "string",
+        "description": "http(s), file://, or existing absolute/relative HTML/file path for open/goto."
+      },
+      "html_path": {
+        "type": "string",
+        "description": "Existing local HTML path for open/goto when url is not provided."
+      },
+      "headless": {
+        "type": "boolean",
+        "description": "Run headless when true. Defaults to false so UI agents can inspect visible browser behavior."
+      },
+      "width": {
+        "type": "integer",
+        "description": "Viewport/window width for open/screenshot."
+      },
+      "height": {
+        "type": "integer",
+        "description": "Viewport/window height for open/screenshot."
+      },
+      "selector": {
+        "type": "string",
+        "description": "CSS selector for click/type actions."
+      },
+      "text": {
+        "type": "string",
+        "description": "Text to type into the focused element or selector."
+      },
+      "expression": {
+        "type": "string",
+        "description": "JavaScript expression for evaluate action. Executed in the current page context."
+      },
+      "wait_ms": {
+        "type": "integer",
+        "description": "Small wait after navigation/action before capture or inspection."
+      },
+      "remove_profile": {
+        "type": "boolean",
+        "description": "When closing, remove the temporary browser profile directory. Defaults to true."
+      }
+    },
+    "required": ["action"]
+  }
+}

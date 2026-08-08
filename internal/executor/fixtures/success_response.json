@@ -1,0 +1,30 @@
+{
+  "_description": "Sample JSON-RPC response: successful node execution",
+  "_version": "1.0.0",
+  "jsonrpc": "2.0",
+  "result": {
+    "status": "SUCCESS",
+    "exit_code": 0,
+    "duration_sec": 4.52,
+    "stdout": "Hello from node execution\nProcessing data...\nDone.\n",
+    "stderr": "",
+    "artifacts": [
+      {
+        "path": "result.json",
+        "size_bytes": 128,
+        "content_type": "json"
+      },
+      {
+        "path": "output.csv",
+        "size_bytes": 4096,
+        "content_type": "csv"
+      }
+    ],
+    "metrics": {
+      "rows_processed": 1500,
+      "api_calls": 3
+    },
+    "trace_id": "tr-a1b2c3d4e5f6"
+  },
+  "id": "exec-001"
+}

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  root-go:
+    name: Control plane (Go)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26.x"
+          cache-dependency-path: |
+            go.sum
+            agent/go.sum
+      - run: go test -timeout 20m ./cmd/... ./internal/...
+      - run: go build -o "${RUNNER_TEMP}/rhizome" ./cmd/rhizome
+      - name: Secret scan
+        run: go run github.com/zricethezav/gitleaks/v8@v8.29.1 git . --no-banner --redact
+      - name: Workflow lint
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+  agent-go:
+    name: Native agent (Go)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26.x"
+          cache-dependency-path: agent/go.sum
+      - name: Test
+        working-directory: agent
+        run: go test -timeout 20m ./...
+      - name: Build
+        working-directory: agent
+        run: go build -o "${RUNNER_TEMP}/rhizome-bot" .
+
+  python-and-hygiene:
+    name: Executor and repository hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Python executor tests
+        run: python -m unittest discover -s internal -t . -p 'test_*.py'
+      - name: Repository hygiene
+        run: python scripts/check_repository_hygiene.py
+      - name: Markdown links
+        run: python scripts/check_markdown_links.py

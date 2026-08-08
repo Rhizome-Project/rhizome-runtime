@@ -1,0 +1,2 @@
+ALTER TABLE human_actions
+  ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;

@@ -1,0 +1,18 @@
+{
+  "_description": "Sample JSON-RPC error response: executor timeout (-32017)",
+  "_version": "1.0.0",
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32017,
+    "message": "executor_timeout",
+    "details": {
+      "status": "TIMEOUT",
+      "exit_code": -1,
+      "duration_sec": 300.02,
+      "error_message": "Container killed after 300s timeout",
+      "stderr": "",
+      "trace_id": "tr-timeout-1234"
+    }
+  },
+  "id": "exec-002"
+}

@@ -1,0 +1,18 @@
+{
+  "_description": "Sample JSON-RPC error response: runtime error (-32018)",
+  "_version": "1.0.0",
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32018,
+    "message": "executor_runtime_error",
+    "details": {
+      "status": "FAILED",
+      "exit_code": 1,
+      "duration_sec": 2.15,
+      "error_message": "Container exited with code 1",
+      "stderr": "Traceback (most recent call last):\n  File \"/app/task.py\", line 12, in <module>\n    result = process_data(input_path)\n  File \"/app/task.py\", line 8, in process_data\n    raise ValueError(\"Invalid input format\")\nValueError: Invalid input format\n",
+      "trace_id": "tr-error-5678"
+    }
+  },
+  "id": "exec-003"
+}

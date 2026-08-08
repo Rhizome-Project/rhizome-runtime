@@ -1,0 +1,49 @@
+# Build outputs
+/bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Runtime state
+/data/
+/internal/server/data/
+.rhizome-authority-node-id
+/.runtime/
+/memory/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.log
+*.pid
+
+# Agent-local state
+/agent/workspace/
+/agent/.config/
+/agent/.cache/
+/agent/.state/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Go
+coverage.out
+*.test
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Local environment
+.env
+.env.*
+!.env.example

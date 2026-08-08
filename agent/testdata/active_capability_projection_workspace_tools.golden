@@ -1,0 +1,31 @@
+## Active Capability Snapshot
+- projection_source: agent.runtime_capability_snapshot
+- projection_contract: active_capability_snapshot_projection.v1
+- projection_digest: sha256:0a029e7dd291006f09afae53ecad33b97928f92ec4f8d0c5ff34b5d4e0c8994b
+- snapshot_id: cap_workspace_tools_projection_golden
+- snapshot_kind: run
+- schema: daemon_capability_snapshot.v1
+- overall_status: enabled
+- prompt_contract: prompt_capabilities.v1
+- enabled_tools: fake_ledger_tool, list_directory, read_file
+- disabled_tools:
+  - mcp__*: disabled (program_b.unknown_mcp_disabled)
+  - shell: disabled (program_b.raw_shell_disabled)
+  - write_file: disabled (program_b.raw_repo_mutation_disabled)
+- inspection_only_surfaces: bridges, ui, workspace_tools
+- surface_states:
+  - workspace_tools: degraded (deployment.opt_in_workspace_tools)
+  - executor: disabled (executor.operation_ledger_required)
+  - memory: disabled (memory.local.disabled_in_daemon, program_a.no_direct_memory_promotion)
+  - ui: inspection_only (program_a.ui_no_authority_bearing_actions)
+- budget_ceilings:
+  - max_tool_iterations: 9
+  - max_shell_timeout_sec: 30
+  - max_prompt_doc_chars: 1234
+  - max_prompt_spec_chars: 2345
+  - max_smoke_cycles_per_agent: 2
+  - max_smoke_cycles_per_task: 3
+- hard_rules:
+  - Only use enabled tools listed in this capability snapshot.
+  - Do not claim MCP, executor, browser, memory promotion, or bridge availability unless enabled here.
+  - Workspace document materialization through workspace_doc_put or structured result materialize is always daemon-safe; local shell and file writes are allowed only when listed as enabled in this snapshot.
