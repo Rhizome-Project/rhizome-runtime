@@ -29,11 +29,18 @@ func localGitDirFromRemoteURL(remoteURL string) (string, bool) {
 		return filepath.FromSlash(u), true // bare local path
 	}
 	p := strings.TrimPrefix(u, "file://")
+	if strings.TrimSpace(p) == "" {
+		return "", false
+	}
 	// file:///C:/path -> /C:/path on Windows; strip the leading slash before a drive letter.
 	if len(p) >= 3 && p[0] == '/' && p[2] == ':' {
 		p = p[1:]
 	}
-	return filepath.FromSlash(p), true
+	localPath := filepath.Clean(filepath.FromSlash(p))
+	if localPath == "." {
+		return "", false
+	}
+	return localPath, true
 }
 
 func localGitDirCandidatesFromRemoteURL(remoteURL string) ([]string, bool) {

@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -1906,14 +1907,14 @@ func internalHeartbeatCheckoutMatchesAgentOrTask(checkout ProjectCheckoutRecord,
 	return false
 }
 
-func internalHeartbeatLocalPathRef(path string) string {
-	path = strings.TrimSpace(path)
-	if path == "" {
+func internalHeartbeatLocalPathRef(localPath string) string {
+	localPath = strings.TrimSpace(localPath)
+	if localPath == "" {
 		return ""
 	}
-	cleaned := filepath.Clean(path)
-	base := strings.TrimSpace(filepath.Base(cleaned))
-	if base == "." || base == string(filepath.Separator) {
+	cleaned := filepath.ToSlash(filepath.Clean(localPath))
+	base := strings.TrimSpace(path.Base(strings.ReplaceAll(cleaned, `\`, "/")))
+	if base == "" || base == "." || base == "/" || base == `\` {
 		return "<local-checkout>"
 	}
 	return "<local-checkout>/" + internalHeartbeatSurfaceField(base, 80)

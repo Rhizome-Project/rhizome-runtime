@@ -126,6 +126,8 @@ func TestLocalGitDirFromRemoteURL(t *testing.T) {
 	}{
 		{"file:///C:/Users/x/repo.git", true, "Users"},
 		{"file:///home/u/repo.git", true, "home"},
+		{"file://", false, ""},
+		{"file://.", false, ""},
 		{"/var/repos/repo.git", true, "repos"},
 		{"https://github.com/x/y.git", false, ""},
 		{"ssh://git@host/x.git", false, ""},

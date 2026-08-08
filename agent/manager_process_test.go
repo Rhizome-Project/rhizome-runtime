@@ -897,6 +897,12 @@ func TestStopManagedAgentTerminatesDetachedProcessTree(t *testing.T) {
 	if testing.Short() {
 		t.Skip("process-tree integration test is skipped in short mode")
 	}
+	origMatches := managedAgentProcessMatchesFunc
+	managedAgentProcessMatchesFunc = func(int, AgentProcessState, ManagedAgentRecord) (bool, error) {
+		return true, nil
+	}
+	defer func() { managedAgentProcessMatchesFunc = origMatches }()
+
 	workdir := t.TempDir()
 	marker := filepath.Join(workdir, "escaped-child.txt")
 	stdout, err := os.OpenFile(filepath.Join(workdir, "tree.out.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
@@ -2540,12 +2546,13 @@ func containsCleanPath(paths []string, want string) bool {
 
 func TestBuildManagedAgentProcessEnvUsesAllowlistAndLocalScratch(t *testing.T) {
 	home := t.TempDir()
+	allowedPath := filepath.Join(t.TempDir(), "tools")
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
 	t.Setenv("HOMEDRIVE", "")
 	t.Setenv("HOMEPATH", "")
 	t.Setenv("RHIZOME_OWNER_USER_ID", "developer")
-	t.Setenv("PATH", "C:\\tools")
+	t.Setenv("PATH", allowedPath)
 	t.Setenv("OPENAI_API_KEY", "openai-secret")
 	t.Setenv("HTTPS_PROXY", "http://proxy.internal")
 	t.Setenv("RHIZOME_TOKEN", "do-not-leak")
@@ -2573,7 +2580,7 @@ func TestBuildManagedAgentProcessEnvUsesAllowlistAndLocalScratch(t *testing.T) {
 	if got[managedAgentEnvFlag] != "1" {
 		t.Fatalf("expected managed env flag, got %+v", got)
 	}
-	if !pathListContains(filepath.SplitList(got["PATH"]), "C:\\tools") || got["OPENAI_API_KEY"] != "openai-secret" {
+	if !pathListContains(filepath.SplitList(got["PATH"]), allowedPath) || got["OPENAI_API_KEY"] != "openai-secret" {
 		t.Fatalf("expected allowed env keys to survive, got %+v", got)
 	}
 	if got["HTTPS_PROXY"] != "http://proxy.internal" {
