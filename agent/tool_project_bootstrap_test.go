@@ -1008,3 +1008,12 @@ func TestProjectBootstrapDefaultsAreFailClosedAndDeterministic(t *testing.T) {
 		t.Fatalf("expected IMPLEMENTATION phase to be rejected")
 	}
 }
+
+func TestProjectBootstrapMatchKeyPreservesUnicodeLetters(t *testing.T) {
+	if got, want := projectBootstrapMatchKey("  Café—Renderer 42  "), "café renderer 42"; got != want {
+		t.Fatalf("projectBootstrapMatchKey() = %q, want %q", got, want)
+	}
+	if got, want := projectBootstrapMatchKey("Cafe\u0301 Renderer 42"), "café renderer 42"; got != want {
+		t.Fatalf("projectBootstrapMatchKey() for decomposed Unicode = %q, want %q", got, want)
+	}
+}

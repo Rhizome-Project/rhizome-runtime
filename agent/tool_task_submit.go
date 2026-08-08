@@ -1323,10 +1323,7 @@ func taskSubmitLooksLikeLaneAdmissionTask(title, description string) bool {
 		strings.Contains(titleText, "unlock implementation") ||
 		strings.Contains(titleText, "start implementation lane") ||
 		strings.Contains(titleText, "set up implementation lane") ||
-		strings.Contains(titleText, "prepare implementation lane") ||
-		strings.Contains(titleText, "открыть implementation") ||
-		strings.Contains(titleText, "открыть lane") ||
-		strings.Contains(titleText, "открыть implementation lane") {
+		strings.Contains(titleText, "prepare implementation lane") {
 		return true
 	}
 	metaMarkers := []string{
@@ -1356,11 +1353,6 @@ func taskSubmitLooksLikeLaneAdmissionTask(title, description string) bool {
 		"claim/rebind",
 		"claim admission",
 		"local implementation workspace",
-		"открыть implementation",
-		"зарегистрировать checkout",
-		"зарегистрировать branch",
-		"зарегистрировать вет",
-		"перейти к локальной реализации",
 	}
 	score := 0
 	for _, marker := range metaMarkers {
@@ -1372,9 +1364,6 @@ func taskSubmitLooksLikeLaneAdmissionTask(title, description string) bool {
 		return true
 	}
 	if score == 1 && strings.Contains(text, "expected result") && strings.Contains(text, "claimed implementation task") {
-		return true
-	}
-	if score == 1 && strings.Contains(text, "ожидаемый результат") && strings.Contains(text, "claimed implementation task") {
 		return true
 	}
 	return false

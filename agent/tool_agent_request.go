@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 )
 
 type AgentRequestTool struct {
@@ -334,6 +335,9 @@ func agentRequestRequiresWorkLoop(prompt string) bool {
 	if lower == "" {
 		return false
 	}
+	if agentRequestHasScreenshotAction(lower) {
+		return true
+	}
 	for _, marker := range []string{
 		"browser-based visual qa",
 		"browser smoke/visual qa",
@@ -343,21 +347,15 @@ func agentRequestRequiresWorkLoop(prompt string) bool {
 		"playwright",
 		"start the app",
 		"launch the app",
+		"run the app",
 		"materialize checkout",
 		"create checkout",
 		"publish evidence",
+		"publish packet",
 		"workspace_doc_put",
 		"screenshot refs",
-		"screenshot capture",
 		"viewport matrix",
-		"подними app",
-		"подними приложение",
-		"запусти app",
-		"запусти приложение",
-		"сделай checkout",
-		"опубликуй evidence",
-		"опубликуй packet",
-		"выполни реальный browser",
+		"run a real browser",
 	} {
 		if strings.Contains(lower, marker) {
 			return true
@@ -375,11 +373,6 @@ func agentRequestRequiresWorkLoop(prompt string) bool {
 		"npx ",
 		"shell",
 		"browser",
-		"запусти",
-		"выполни",
-		"сними",
-		"засними",
-		"подними",
 	})
 	workTarget := containsAnySignal(lower, []string{
 		"checkout",
@@ -395,13 +388,57 @@ func agentRequestRequiresWorkLoop(prompt string) bool {
 		"packet",
 		"viewport",
 		"artifact",
-		"скрин",
-		"браузер",
-		"порт",
-		"сервер",
-		"артефакт",
 	})
 	return action && workTarget
+}
+
+func agentRequestHasScreenshotAction(text string) bool {
+	text = strings.NewReplacer("don't", "do not", "dont", "do not").Replace(text)
+	words := strings.FieldsFunc(text, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	for i, word := range words {
+		if word == "screenshot" && !agentRequestActionIsNegated(words, i) &&
+			(i == 0 || words[i-1] == "please" || (i >= 2 && (words[i-2] == "can" || words[i-2] == "could" || words[i-2] == "would") && words[i-1] == "you")) {
+			return true
+		}
+		if word != "take" && word != "capture" && word != "grab" && word != "snap" {
+			continue
+		}
+		if agentRequestActionIsNegated(words, i) {
+			continue
+		}
+		j := i + 1
+		for j < len(words) {
+			switch words[j] {
+			case "a", "an", "the", "another", "app", "browser", "current", "fresh", "final", "result", "desktop", "mobile", "new":
+				j++
+			default:
+				goto target
+			}
+		}
+	target:
+		if j < len(words) && words[j] == "screenshot" {
+			return true
+		}
+		if j+1 < len(words) && words[j] == "screen" && words[j+1] == "shot" {
+			return true
+		}
+	}
+	return false
+}
+
+func agentRequestActionIsNegated(words []string, actionIndex int) bool {
+	start := actionIndex - 3
+	if start < 0 {
+		start = 0
+	}
+	for _, word := range words[start:actionIndex] {
+		if word == "not" || word == "never" || word == "without" {
+			return true
+		}
+	}
+	return false
 }
 
 func waitForDelegatedTaskClaimEvidence(ctx context.Context, client *RhizomeClient, workspaceID, taskID, agentID string, timeout time.Duration, authorityTransition bool) (string, error) {

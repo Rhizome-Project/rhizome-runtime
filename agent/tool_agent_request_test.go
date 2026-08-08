@@ -913,6 +913,38 @@ func TestAgentRequestToolRejectsReviewThatRequiresWorkLoop(t *testing.T) {
 	}
 }
 
+func TestAgentRequestRequiresWorkLoopForEnglishScreenshotActions(t *testing.T) {
+	for _, prompt := range []string{
+		"Please take a screenshot of the app.",
+		"Take screenshot evidence from the browser.",
+		"Take an app screenshot after launch.",
+		"Grab a screenshot of the app.",
+		"Capture screenshot evidence from the result page.",
+		"Take the screenshot after launch.",
+		"Take app screenshot evidence.",
+		"Snap a screenshot of the app.",
+		"Take a screen shot of the app.",
+		"Snap the screenshot of the app.",
+		"Grab an app screenshot.",
+		"Please screenshot the app.",
+		"Can you screenshot the app?",
+		"Can you take another screenshot?",
+	} {
+		if !agentRequestRequiresWorkLoop(prompt) {
+			t.Fatalf("expected screenshot action to require a work loop: %q", prompt)
+		}
+	}
+	if agentRequestRequiresWorkLoop("Please take a look at the screenshot.") {
+		t.Fatal("a request to inspect an existing screenshot must not imply an execution work loop")
+	}
+	if agentRequestRequiresWorkLoop("Please do not take a screenshot; review the existing image.") {
+		t.Fatal("an explicitly negated screenshot action must not imply an execution work loop")
+	}
+	if agentRequestRequiresWorkLoop("Please don't take a screenshot; review the existing image.") {
+		t.Fatal("a contracted screenshot negation must not imply an execution work loop")
+	}
+}
+
 func TestAgentRequestToolRejectsDelegatingCurrentAgentsClaim(t *testing.T) {
 	var methods []string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

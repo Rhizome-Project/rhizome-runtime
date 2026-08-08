@@ -228,7 +228,7 @@ func TestRuntimeOwnerBoundDetectionIgnoresHistoricalHintsInDescription(t *testin
 	task := WorkspaceTaskRecord{
 		TaskID:      "task-idle-reflection-owner-bound-hints",
 		Title:       "Artifact quality iteration: inspect evidence and concrete gaps",
-		Description: "Copied context from an old task list:\n- task-old [PENDING]: Провести owner-only patch-queue submit для gamma branch\n\nThe current task is an artifact review.",
+		Description: "Copied context from an old task list:\n- task-old [PENDING]: Run the owner-only patch-queue submit for the gamma branch\n\nThe current task is an artifact review.",
 		ProjectID:   "project-alpha",
 		ProjectLane: "qa",
 		Tags:        []string{"meta-reflection", "anti-idle", "qa", "metacognition-scope-artifact"},

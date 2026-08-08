@@ -7,9 +7,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/Rhizome-Project/rhizome-runtime/internal/dag"
 	"github.com/Rhizome-Project/rhizome-runtime/internal/model"
@@ -53,6 +57,8 @@ const (
 	ProjectPatchQueueStateBlocked    = "BLOCKED"
 	ProjectPatchQueueStateCanceled   = "CANCELED"
 )
+
+var projectPatchQueueValidationRatioPattern = regexp.MustCompile(`(?i)(\d+)\s*(?:/|\s+of\s+)\s*(\d+)`)
 
 var ErrProjectPatchQueueInvalid = errors.New("project patch queue invalid")
 
@@ -2304,6 +2310,13 @@ func projectPatchQueueSupersessionEvidenceHasExplicitNegativeVerdict(evidenceTex
 }
 
 func projectPatchQueueSupersessionEvidenceRejectsProgress(evidenceText string) bool {
+	scanText := evidenceText
+	for _, negatedMissingEvidence := range []string{
+		"no required evidence is missing",
+		"no evidence is missing",
+	} {
+		scanText = strings.ReplaceAll(scanText, negatedMissingEvidence, "")
+	}
 	for _, marker := range []string{
 		"pass_for_acceptance: false",
 		"pass_for_acceptance=false",
@@ -2428,15 +2441,8 @@ func projectPatchQueueSupersessionEvidenceRejectsProgress(evidenceText string) b
 		"regression observed",
 		"crash observed",
 		"cannot accept",
-		"не готов",
-		"не готова",
-		"отсутств",
-		"не хватает",
-		"нет свеж",
-		"заблокирован",
-		"заблокировано",
 	} {
-		if strings.Contains(evidenceText, marker) {
+		if strings.Contains(scanText, marker) {
 			return true
 		}
 	}
@@ -2569,11 +2575,123 @@ func projectPatchQueueSupersessionEvidenceHasPositiveValidation(evidenceText str
 		"status: passed",
 		"status=passed",
 		"tests passed",
-		"проверка пройд",
-		"smoke пройд",
-		"валидация пройд",
 	} {
-		if strings.Contains(evidenceText, marker) {
+		if projectPatchQueueEvidenceContainsAffirmativePhrase(evidenceText, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func projectPatchQueueEvidenceContainsAffirmativePhrase(evidenceText, marker string) bool {
+	for searchFrom := 0; searchFrom < len(evidenceText); {
+		relative := strings.Index(evidenceText[searchFrom:], marker)
+		if relative < 0 {
+			return false
+		}
+		start := searchFrom + relative
+		end := start + len(marker)
+		if !projectPatchQueueEvidencePhraseIsWordBounded(evidenceText, start, end) {
+			searchFrom = end
+			continue
+		}
+		clauseStart := strings.LastIndexAny(evidenceText[:start], "\n;.,:—–") + 1
+		prefix := evidenceText[clauseStart:start]
+		words := strings.FieldsFunc(prefix, func(r rune) bool {
+			return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+		})
+		for i := len(words) - 1; i >= 0; i-- {
+			switch words[i] {
+			case "and", "but", "because", "although", "however", "then", "while", "yet":
+				words = words[i+1:]
+				i = -1
+			}
+		}
+		negated := false
+		for i, word := range words {
+			switch word {
+			case "0", "no", "never", "neither", "none", "without", "cannot", "zero":
+				negated = true
+			case "not":
+				if i+1 >= len(words) || words[i+1] != "only" {
+					negated = true
+				}
+			}
+		}
+		if !negated &&
+			!projectPatchQueueEvidencePhraseHasPartialRatio(prefix+" "+evidenceText[end:]) &&
+			!projectPatchQueueEvidencePhraseHasNegativeSuffix(evidenceText[end:]) {
+			return true
+		}
+		searchFrom = end
+	}
+	return false
+}
+
+func projectPatchQueueEvidencePhraseHasPartialRatio(text string) bool {
+	match := projectPatchQueueValidationRatioPattern.FindStringSubmatch(text)
+	if len(match) != 3 {
+		return false
+	}
+	successful, successfulErr := strconv.Atoi(match[1])
+	total, totalErr := strconv.Atoi(match[2])
+	return successfulErr != nil || totalErr != nil || total <= 0 || successful != total
+}
+
+func projectPatchQueueEvidencePhraseIsWordBounded(text string, start, end int) bool {
+	if start > 0 {
+		previous, _ := utf8.DecodeLastRuneInString(text[:start])
+		if unicode.IsLetter(previous) || unicode.IsDigit(previous) || previous == '_' {
+			return false
+		}
+	}
+	if end < len(text) {
+		next, _ := utf8.DecodeRuneInString(text[end:])
+		if unicode.IsLetter(next) || unicode.IsDigit(next) || next == '_' {
+			return false
+		}
+	}
+	return true
+}
+
+func projectPatchQueueEvidencePhraseHasNegativeSuffix(suffix string) bool {
+	if boundary := strings.IndexAny(suffix, "\n;."); boundary >= 0 {
+		suffix = suffix[:boundary]
+	}
+	suffix = strings.TrimSpace(suffix)
+	if strings.HasPrefix(suffix, "?") {
+		answerText := strings.TrimSpace(strings.TrimPrefix(suffix, "?"))
+		answer := strings.FieldsFunc(answerText, func(r rune) bool {
+			return !unicode.IsLetter(r)
+		})
+		if len(answer) == 0 || (answer[0] != "yes" && answer[0] != "true") {
+			return true
+		}
+		suffix = strings.TrimSpace(strings.TrimPrefix(answerText, answer[0]))
+	}
+	for _, marker := range []string{
+		": false", ":false", "= false", "=false", ": no", ":no", "= no", "=no",
+		"is false", "was false", "is not true", "was not true", "not true",
+	} {
+		if strings.HasPrefix(suffix, marker) {
+			return true
+		}
+	}
+	if projectPatchQueueEvidencePhraseHasPartialRatio(suffix) {
+		return true
+	}
+	for _, positiveNegative := range []string{
+		"with 0 failures", "with zero failures", "0 failures", "zero failures",
+		"none failed", "no tests failed", "no test failed", "no checks failed",
+		"no failure", "no failures", "no regression", "no regressions",
+	} {
+		suffix = strings.ReplaceAll(suffix, positiveNegative, "")
+	}
+	for _, word := range strings.FieldsFunc(suffix, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	}) {
+		switch word {
+		case "0", "false", "failed", "incorrect", "invalid", "no", "not", "never", "none", "zero":
 			return true
 		}
 	}

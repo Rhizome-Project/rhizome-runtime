@@ -2468,7 +2468,7 @@ func TestTailManagedAgentLogsPreservesUTF8(t *testing.T) {
 		AgentID: "lyrica",
 		Workdir: workdir,
 	}
-	want := "Опубликованы канонические доказательства"
+	want := "Canonical evidence has been published — café"
 	if err := os.WriteFile(filepath.Join(workdir, "agent.out.log"), []byte("prefix\n"+want+"\n"), 0o644); err != nil {
 		t.Fatalf("write stdout log: %v", err)
 	}

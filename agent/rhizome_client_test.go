@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 type blockingReadCloser struct {
@@ -168,7 +169,14 @@ func TestRhizomeClientRespondRequestClampsOversizedResponse(t *testing.T) {
 	}))
 	defer server.Close()
 
-	original := strings.Repeat("Щ", maxAgentRespondResponseBytes)
+	original := strings.Repeat("é", maxAgentRespondResponseBytes)
+	clamped := clampAgentRespondResponse(original)
+	if !utf8.ValidString(clamped) {
+		t.Fatal("clamped response must remain valid UTF-8")
+	}
+	if strings.ContainsRune(clamped, utf8.RuneError) {
+		t.Fatal("clamped response must not contain a replacement rune")
+	}
 	if err := NewRhizomeClient(server.URL, "token").RespondRequest(context.Background(), "req-1", original); err != nil {
 		t.Fatalf("RespondRequest error: %v", err)
 	}
@@ -186,7 +194,7 @@ func TestRhizomeClientRespondRequestClampsOversizedResponse(t *testing.T) {
 		}
 		t.Fatalf("expected truncation marker, got tail %q", gotResponse[tailStart:])
 	}
-	if !strings.Contains(gotResponse, "Щ") {
+	if !strings.Contains(gotResponse, "é") {
 		t.Fatalf("expected preserved UTF-8 prefix")
 	}
 }

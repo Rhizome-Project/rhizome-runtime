@@ -496,8 +496,6 @@ func projectPlanningTextHasCriticalReviewLoose(text string) bool {
 		"product-fidelity review",
 		"plan review",
 		"adversarial review",
-		"критическое ревью",
-		"ревью плана",
 	})
 	hasSeverity := containsAnySignal(text, []string{
 		"blocking",
@@ -506,8 +504,6 @@ func projectPlanningTextHasCriticalReviewLoose(text string) bool {
 		"minor",
 		"taste",
 		"none",
-		"блокир",
-		"существен",
 	}) && containsAnySignal(text, []string{
 		"status: open",
 		"status=open",
@@ -516,9 +512,6 @@ func projectPlanningTextHasCriticalReviewLoose(text string) bool {
 		"accepted",
 		"rejected",
 		"no blocking",
-		"исправ",
-		"принят",
-		"отклон",
 	})
 	return hasReview && hasSeverity
 }

@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 )
 
 const (
@@ -486,6 +487,9 @@ func (r *Runtime) completionCoordinationTaskRequiresGate(task WorkspaceTaskRecor
 	if isStrategicLeadCorrectionTask(task) {
 		return false
 	}
+	if completionCoordinationExplicitGateRequired(task) {
+		return true
+	}
 	if completionCoordinationExplicitSolo(task) {
 		return false
 	}
@@ -494,8 +498,73 @@ func (r *Runtime) completionCoordinationTaskRequiresGate(task WorkspaceTaskRecor
 		return true
 	}
 	text := strings.ToLower(strings.Join([]string{task.Title, task.Description, task.TaskKind, task.TaskTemplate}, "\n"))
-	for _, marker := range []string{"multi-agent", "multiagent", "coordination", "peer review", "review", "autonomous", "автоном", "координац", "ревью", "межагент"} {
+	for _, marker := range []string{"multi-agent", "multiagent", "inter-agent", "cross-agent", "coordination", "peer review", "review", "autonomous"} {
 		if strings.Contains(text, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func completionCoordinationExplicitGateRequired(task WorkspaceTaskRecord) bool {
+	text := strings.ToLower(strings.Join([]string{task.Title, task.Description, task.TaskKind, task.TaskTemplate}, "\n"))
+	for _, clause := range strings.FieldsFunc(text, func(r rune) bool {
+		return r == '\n' || r == ';' || r == '.' || r == ','
+	}) {
+		clause = strings.TrimSpace(clause)
+		for _, marker := range []string{
+			"peer review required",
+			"peer review is required",
+			"review required",
+			"review is required",
+			"review is mandatory",
+			"requires peer review",
+			"requires review",
+			"must be reviewed",
+			"peer review before completion",
+			"review before completion",
+			"peer review must happen before completion",
+			"review must happen before completion",
+			"do not complete without peer review",
+			"cannot complete without peer review",
+			"must not complete without peer review",
+			"do not proceed without peer review",
+			"cannot proceed without peer review",
+			"do not complete without review",
+			"cannot complete without review",
+			"must not complete without review",
+			"do not proceed without review",
+			"cannot proceed without review",
+			"coordination required",
+			"coordination is required",
+			"coordination is mandatory",
+			"requires coordination",
+			"mandatory coordination",
+			"solo execution denied",
+			"solo not allowed",
+			"solo is not allowed",
+			"single agent not allowed",
+			"single-agent not allowed",
+			"solo prohibited",
+		} {
+			if start := strings.Index(clause, marker); start >= 0 && !completionCoordinationGateRequirementDenied(clause[start+len(marker):]) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func completionCoordinationGateRequirementDenied(suffix string) bool {
+	suffix = strings.TrimSpace(suffix)
+	if strings.HasPrefix(suffix, "?") {
+		answer := strings.FieldsFunc(strings.TrimSpace(strings.TrimPrefix(suffix, "?")), func(r rune) bool {
+			return !unicode.IsLetter(r)
+		})
+		return len(answer) > 0 && (answer[0] == "no" || answer[0] == "not" || answer[0] == "false")
+	}
+	for _, marker := range []string{"false", ": false", ":false", "=false", "no", ": no", ":no", "=no", "? no", "? false"} {
+		if suffix == marker || strings.HasPrefix(suffix, marker+" ") {
 			return true
 		}
 	}
@@ -504,10 +573,55 @@ func (r *Runtime) completionCoordinationTaskRequiresGate(task WorkspaceTaskRecor
 
 func completionCoordinationExplicitSolo(task WorkspaceTaskRecord) bool {
 	text := strings.ToLower(strings.Join([]string{task.Title, task.Description, task.TaskKind, task.TaskTemplate}, "\n"))
-	for _, marker := range []string{"solo_ok", "solo allowed", "single-agent", "single agent", "без ревью", "без координации"} {
-		if strings.Contains(text, marker) {
+	for _, clause := range strings.FieldsFunc(text, func(r rune) bool {
+		return r == '\n' || r == ';' || r == '.' || r == ','
+	}) {
+		if strings.ContainsRune(clause, '?') {
+			continue
+		}
+		clause = strings.Trim(strings.TrimSpace(clause), "-* \t\r:!")
+		switch clause {
+		case "solo_ok", "solo_ok=true", "solo_ok: true",
+			"solo allowed", "solo allowed: true",
+			"single-agent", "single agent",
+			"review not required", "review not required: true",
+			"coordination not required", "coordination not required: true",
+			"solo execution approved", "solo execution approved: true",
+			"single-agent approved", "single-agent approved: true":
 			return true
 		}
+		for _, marker := range []string{
+			"solo allowed for ",
+			"single-agent ",
+			"single agent ",
+			"review not required for ",
+			"coordination not required for ",
+			"solo execution approved for ",
+			"single-agent approved for ",
+		} {
+			if strings.HasPrefix(clause, marker) && !completionCoordinationSoloSuffixDenied(strings.TrimPrefix(clause, marker)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func completionCoordinationSoloSuffixDenied(suffix string) bool {
+	suffix = strings.ToLower(strings.TrimSpace(suffix))
+	for _, marker := range []string{
+		"not approved", "not allowed", "not permitted", "must not", "cannot", "never allowed",
+		"denied", "forbidden", "prohibited", "disallowed", "rejected",
+	} {
+		if strings.Contains(suffix, marker) {
+			return true
+		}
+	}
+	words := strings.FieldsFunc(suffix, func(r rune) bool {
+		return !unicode.IsLetter(r)
+	})
+	if len(words) > 0 && (words[len(words)-1] == "false" || words[len(words)-1] == "no") {
+		return true
 	}
 	return false
 }

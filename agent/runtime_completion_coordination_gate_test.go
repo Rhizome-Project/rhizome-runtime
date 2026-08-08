@@ -53,6 +53,112 @@ func TestCompletionCoordinationExplicitFalseDisablesHeuristicGate(t *testing.T) 
 	}
 }
 
+func TestCompletionCoordinationMissingReviewLanguageDoesNotApproveSoloExecution(t *testing.T) {
+	runtime := &Runtime{cfg: RuntimeConfig{
+		Mode:        RuntimeModeDaemon,
+		WorkspaceID: "ws-1",
+		AgentID:     "agent-alpha",
+	}}
+	for _, description := range []string{
+		"Do not complete without review.",
+		"No review has completed yet; peer review is required.",
+		"Cannot proceed without coordination.",
+		"solo_ok=false",
+		"Solo allowed: false.",
+		"Review not required: false.",
+		"Review not required?",
+		"This does not mean review not required; review is mandatory.",
+		"Solo execution approved? No.",
+		"A single agent must not complete this without peer review.",
+		"Single agent must not complete this task.",
+		"Single-agent execution is not approved.",
+		"Solo allowed for this task: false.",
+		"Review not required for this task: false.",
+		"Single agent. Do not complete without peer review.",
+		"Solo allowed for planning only; peer review before completion.",
+		"Solo allowed for planning only; review must happen before completion.",
+		"Single-agent execution is not permitted.",
+	} {
+		task := WorkspaceTaskRecord{
+			TaskID:      "task-review-required",
+			Title:       "High-priority handoff",
+			Description: description,
+			Priority:    "high",
+			TaskKind:    "COORDINATION",
+		}
+		if !runtime.completionCoordinationTaskRequiresGate(task) {
+			t.Fatalf("missing-review language must not approve solo execution: %q", description)
+		}
+	}
+}
+
+func TestCompletionCoordinationExplicitEnglishSoloApprovalDisablesHeuristicGate(t *testing.T) {
+	runtime := &Runtime{cfg: RuntimeConfig{
+		Mode:        RuntimeModeDaemon,
+		WorkspaceID: "ws-1",
+		AgentID:     "agent-alpha",
+	}}
+	for _, description := range []string{
+		"Review not required; solo execution approved.",
+		"Single-agent implementation.",
+		"Solo allowed for this bounded task.",
+		"Review not required for this task.",
+		"Single-agent implementation must preserve the API.",
+		"Single-agent implementation without external dependencies.",
+		"Single-agent implementation of required documentation.",
+		"Single-agent implementation without peer review.",
+		"Single-agent implementation with no external dependencies.",
+		"Single-agent implementation, not a multi-agent effort.",
+	} {
+		task := WorkspaceTaskRecord{
+			TaskID:      "task-solo-approved",
+			Title:       "High-priority implementation",
+			Description: description,
+			Priority:    "high",
+			TaskKind:    "EXECUTION",
+		}
+		if runtime.completionCoordinationTaskRequiresGate(task) {
+			t.Fatalf("explicit English solo approval should disable the heuristic gate: %q", description)
+		}
+	}
+}
+
+func TestCompletionCoordinationDeniedReviewQuestionAllowsExplicitSolo(t *testing.T) {
+	runtime := &Runtime{cfg: RuntimeConfig{
+		Mode:        RuntimeModeDaemon,
+		WorkspaceID: "ws-1",
+		AgentID:     "agent-alpha",
+	}}
+	task := WorkspaceTaskRecord{
+		TaskID:      "task-review-question-denied",
+		Title:       "High-priority implementation",
+		Description: "Review required? Not for this task, solo allowed.",
+		Priority:    "high",
+		TaskKind:    "EXECUTION",
+	}
+	if runtime.completionCoordinationTaskRequiresGate(task) {
+		t.Fatal("an explicitly denied review requirement must not override solo approval")
+	}
+}
+
+func TestCompletionCoordinationExplicitReviewRequirementOverridesSoloLanguage(t *testing.T) {
+	runtime := &Runtime{cfg: RuntimeConfig{
+		Mode:        RuntimeModeDaemon,
+		WorkspaceID: "ws-1",
+		AgentID:     "agent-alpha",
+	}}
+	task := WorkspaceTaskRecord{
+		TaskID:      "task-review-required",
+		Title:       "Single agent",
+		Description: "Peer review is required.",
+		Priority:    "normal",
+		TaskKind:    "EXECUTION",
+	}
+	if !runtime.completionCoordinationTaskRequiresGate(task) {
+		t.Fatal("an explicit review requirement must override solo language")
+	}
+}
+
 func TestCompletionCoordinationSkipsStrategicLeadCorrectionTask(t *testing.T) {
 	runtime := &Runtime{cfg: RuntimeConfig{
 		Mode:        RuntimeModeDaemon,

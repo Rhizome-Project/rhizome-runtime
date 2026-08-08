@@ -14169,7 +14169,7 @@ func TestOwnerBoundDetectionIgnoresHistoricalHintsInReflectionDescription(t *tes
 		OwnerUserID:  "developer",
 		Priority:     "normal",
 		Title:        "Artifact quality iteration: inspect evidence and concrete gaps",
-		Description:  "Reflection context copied from an earlier snapshot.\n\nOpen task hints:\n- task-old-owner-submit [PENDING]: Провести owner-only patch-queue submit для gamma branch\n\nThe current task is the artifact review itself.",
+		Description:  "Reflection context copied from an earlier snapshot.\n\nOpen task hints:\n- task-old-owner-submit [PENDING]: Run the owner-only patch-queue submit for the gamma branch\n\nThe current task is the artifact review itself.",
 		TaskKind:     "EXECUTION",
 		TaskTemplate: "generic",
 		Tags: []string{

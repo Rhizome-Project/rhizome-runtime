@@ -1616,14 +1616,19 @@ func TestTaskSubmitToolRejectsImplementationLaneMetaTask(t *testing.T) {
 		description string
 	}{
 		{
-			name:        "observed russian lane opener",
-			title:       "Открыть implementation lane для локального sub-pixel image processor",
-			description: "Создать implementation-shaped задачу, чтобы beta мог зарегистрировать checkout/branch и перейти к локальной реализации. Ожидаемый результат: CLAIMED implementation task с write scope app/**, src/**, tests/**; после этого beta должен вызвать project_checkout_materialize.",
+			name:        "direct lane opener",
+			title:       "Start implementation lane for local sub-pixel image processor",
+			description: "Create an implementation-shaped task so beta can register a checkout and branch before moving to local implementation. Expected result: a CLAIMED implementation task with write scope app/**, src/**, tests/**; beta should then call project_checkout_materialize.",
 		},
 		{
 			name:        "english gate opener",
 			title:       "Open implementation lane for local image processor",
 			description: "Set up implementation lane admission, materialize checkout, register branch evidence, and satisfy project gates before the real work starts.",
+		},
+		{
+			name:        "description-only expected result",
+			title:       "Prepare bounded local work",
+			description: "Register checkout before local implementation. Expected result: a CLAIMED implementation task.",
 		},
 		{
 			name:        "candidate provenance without product work",

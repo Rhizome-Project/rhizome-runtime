@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 const defaultProjectLeadLeaseSeconds = 3600
@@ -555,15 +558,12 @@ func selectBootstrapProjectByID(projects []ProjectRecord, projectID string) (Pro
 }
 
 func projectBootstrapMatchKey(value string) string {
-	value = strings.ToLower(strings.TrimSpace(value))
+	value = norm.NFC.String(strings.ToLower(strings.TrimSpace(value)))
 	var b strings.Builder
 	space := false
 	for _, r := range value {
 		switch {
-		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
-			b.WriteRune(r)
-			space = false
-		case r >= 'а' && r <= 'я', r == 'ё':
+		case unicode.IsLetter(r), unicode.IsDigit(r):
 			b.WriteRune(r)
 			space = false
 		default:
