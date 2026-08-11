@@ -14,6 +14,14 @@
 This repository is a public snapshot of an ongoing research codebase;
 development history predates the public tree.
 
+## Public research artifacts
+
+- [Early Signal 01: autonomous build](https://github.com/Rhizome-Project/signal-01-autonomous-build)
+  publishes a reproducible three-agent software build, its verification suite,
+  release, run report, and explicit provenance boundary.
+- [Rhizome Project](https://rhizome-project.com) contains the public system
+  overview, research notes, and current Early Signals status.
+
 Long-running agents need more than a prompt and a tool loop. They need durable
 ownership, recoverable sessions, shared context, explicit evidence, and a place
 to coordinate when processes restart or work crosses agent boundaries.

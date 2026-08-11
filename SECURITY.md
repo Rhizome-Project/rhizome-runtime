@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-Rhizome Runtime is currently an unversioned research preview. Security fixes
-are applied only to the latest commit on `main` until the first tagged preview
-release. There is no production support or long-term-support branch.
+`v0.1.0-preview` is the current tagged research preview. Security fixes are
+applied to the latest commit on `main` and included in the next preview release.
+There is no production support or long-term-support branch.
 
 ## Private reporting
 
@@ -12,8 +12,8 @@ Do not open a public issue for a vulnerability that could expose credentials,
 data, or a working exploit.
 
 Use the repository's **Security** tab to submit a private vulnerability report
-or draft advisory. If private reporting is unavailable, contact the
-Rhizome-Project organization owners through GitHub and request a private channel
+or draft advisory. If private reporting is unavailable, email
+`hello@rhizome-project.com` with a short request for a private reporting channel
 before sending technical details.
 
 Include:
